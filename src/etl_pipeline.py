@@ -18,8 +18,6 @@ from dotenv import load_dotenv  # noqa: F401
 from pyspark.sql import DataFrame, SparkSession  # noqa: F401
 from pyspark.sql import functions as F  # noqa: F401
 
-import shutil
-
 # ── Predefined constants (do not modify) ──────────────────────────────────────
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -57,11 +55,26 @@ def transform(df: DataFrame) -> dict[str, DataFrame]:
     """Split the data by neighborhood and save each as a separate CSV file."""
     partitions = {}
 
+    if not OUTPUT_DIR.exists():
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
     for neighborhood_name in NEIGHBORHOODS:
         neighborhood_df = df.filter(F.col("neighborhood") == neighborhood_name)
-        path_str = str(OUTPUT_FILES[neighborhood_name])
-        neighborhood_df.coalesce(1).write.csv(path_str, header=True, mode="overwrite")
+        
+        final_csv_path = OUTPUT_FILES[neighborhood_name]
+        temp_folder = final_csv_path.with_suffix(".tmp")
+
+        neighborhood_df.coalesce(1).write.csv(str(temp_folder), header=True, mode="overwrite")
+
+        part_file = list(temp_folder.glob("part-*.csv"))[0]
+        part_file.replace(final_csv_path)
+
+        for extra_file in temp_folder.iterdir():
+            extra_file.unlink()
+        temp_folder.rmdir()
+
         partitions[neighborhood_name] = neighborhood_df
+        
     return partitions
 
 
