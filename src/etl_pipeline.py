@@ -55,11 +55,14 @@ def transform(df: DataFrame) -> dict[str, DataFrame]:
     """Split the data by neighborhood and save each as a separate CSV file."""
     partitions = {}
 
-    if not OUTPUT_DIR.exists():
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     for neighborhood_name in NEIGHBORHOODS:
-        neighborhood_df = df.filter(F.col("neighborhood") == neighborhood_name)
+
+        neighborhood_df = (
+            df.filter(F.col("neighborhood") == neighborhood_name)
+            .orderBy("house_id")
+        )
         
         final_csv_path = OUTPUT_FILES[neighborhood_name]
         temp_folder = final_csv_path.with_suffix(".tmp")
@@ -74,7 +77,7 @@ def transform(df: DataFrame) -> dict[str, DataFrame]:
         temp_folder.rmdir()
 
         partitions[neighborhood_name] = neighborhood_df
-        
+
     return partitions
 
 
