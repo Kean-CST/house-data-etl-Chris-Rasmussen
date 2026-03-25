@@ -58,7 +58,7 @@ def transform(df: DataFrame) -> dict[str, DataFrame]:
     for neighborhood_name in NEIGHBORHOODS:
         neighborhood_df = df.filter(F.col("neighborhood") == neighborhood_name)
         path_str = str(OUTPUT_FILES[neighborhood_name])
-        neighborhood_df.coalesce(1).wtite.csv(path_str, header=True, mode="overwrite")
+        neighborhood_df.coalesce(1).write.csv(path_str, header=True, mode="overwrite")
         partitions[neighborhood_name] = neighborhood_df
     return partitions
 
@@ -76,7 +76,7 @@ def load(partitions: dict[str, DataFrame], jdbc_url: str, pg_props: dict) -> Non
         )    
 
         print(f"Successfully loaded {neighborhood_name} data into {table_name}")
-        
+
 # ── Main (do not modify) ───────────────────────────────────────────────────────
 def main() -> None:
     load_dotenv(ROOT / ".env")
