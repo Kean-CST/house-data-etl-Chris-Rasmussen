@@ -46,7 +46,6 @@ def extract(spark: SparkSession, csv_path: str) -> DataFrame:
     return (
         spark.read
         .option("header", "true")
-        .option("inferSchema", "true")
         .csv(csv_path)
     )
 
