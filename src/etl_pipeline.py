@@ -56,13 +56,18 @@ def transform(df: DataFrame) -> dict[str, DataFrame]:
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    bool_cols = ["has_pool", "recently_renovated", "has_children", "first_time_buyer"]
+    
     for neighborhood_name in NEIGHBORHOODS:
 
-        neighborhood_df = (
-            df.filter(F.col("neighborhood") == neighborhood_name)
-            .orderBy("house_id")
-        )
-        
+        neighborhood_df = df.filter(F.col("neighborhood") == neighborhood_name).orderBy("house_id")
+
+        neighborhood_df = neighborhood_df.withColumn("sale_date", F.to_date(F.col("sale_date"), "M/d/yy"))
+
+        for col_name in ["has_pool", "recently_renovated", "has_children", "first_time_buyer"]:
+            if col_name in neighborhood_df.columns:
+                neighborhood_df = neighborhood_df.withColumn(col_name, F.initcap(F.col(col_name).cast("string")))
+
         final_csv_path = OUTPUT_FILES[neighborhood_name]
         temp_folder = final_csv_path.with_suffix(".tmp")
 
