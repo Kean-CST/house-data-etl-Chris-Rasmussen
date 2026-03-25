@@ -18,6 +18,8 @@ from dotenv import load_dotenv  # noqa: F401
 from pyspark.sql import DataFrame, SparkSession  # noqa: F401
 from pyspark.sql import functions as F  # noqa: F401
 
+import shutil
+
 # ── Predefined constants (do not modify) ──────────────────────────────────────
 ROOT = Path(__file__).resolve().parent.parent
 
