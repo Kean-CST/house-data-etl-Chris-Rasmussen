@@ -53,7 +53,14 @@ def extract(spark: SparkSession, csv_path: str) -> DataFrame:
 
 def transform(df: DataFrame) -> dict[str, DataFrame]:
     """Split the data by neighborhood and save each as a separate CSV file."""
-    raise NotImplementedError
+    partitions = {}
+
+    for neighborhood_name in NEIGHBORHOODS:
+        neighborhood_df = df.filter(F.col("neighborhood") == neighborhood_name)
+        path_str = str(OUTPUT_FILES[neighborhood_name])
+        neighborhood_df.coalesce(1).wtite.csv(path_str, header=True, mode="overwrite")
+        partitions[neighborhood_name] = neighborhood_df
+    return partitions
 
 
 def load(partitions: dict[str, DataFrame], jdbc_url: str, pg_props: dict) -> None:
